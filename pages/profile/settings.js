@@ -1,10 +1,11 @@
 import styles from '../../styles/Settings.module.css';
 import React, { useEffect } from 'react';
+import Head from 'next/head';
 import { useRouter } from 'next/dist/client/router';
 import { useData } from '../../contexts/UserContext';
 
 const Settings = () => {
-  const { user } = useData();
+  const { user, userData } = useData();
   const router = useRouter();
 
   useEffect(() => {
@@ -12,7 +13,11 @@ const Settings = () => {
       router.push('/login');
     }
   });
-  return <div className={styles.settings}></div>;
+  return (
+    <Head>
+      <title>{userData?.realname} - Settings</title>
+    </Head>
+  );
 };
 
 export default Settings;
