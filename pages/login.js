@@ -1,17 +1,23 @@
 import styles from '../styles/Login.module.css';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Head from 'next/head';
 import { auth } from '../firebase/firebase-config';
 import { signInWithEmailAndPassword } from '@firebase/auth';
 import { useRouter } from 'next/dist/client/router';
 import { PulseLoader } from 'react-spinners';
+import { useData } from '../contexts/UserContext';
 
 const Login = () => {
+  const { user } = useData();
   const router = useRouter();
   const [loginLoading, setLoginLoading] = useState(false);
   const emailRef = useRef();
   const passwordRef = useRef();
-
+  useEffect(() => {
+    if (user) {
+      router.push('/');
+    }
+  });
   async function loginAcc(e) {
     e.preventDefault();
 

@@ -1,8 +1,9 @@
 import { useState, useEffect, useContext, createContext } from 'react';
 import { onAuthStateChanged } from '@firebase/auth';
-import { auth, db } from '../firebase/firebase-config';
-import { doc, getDoc } from '@firebase/firestore';
+import { auth, db, storage } from '../firebase/firebase-config';
+import { collection, doc, getDoc, getDocs } from '@firebase/firestore';
 import { useRouter } from 'next/dist/client/router';
+import { getDownloadURL, ref } from '@firebase/storage';
 
 const UserContextAPI = createContext();
 
@@ -14,6 +15,16 @@ export default function UserContext({ children }) {
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [userData, setUserData] = useState(null);
+  const [imgURL, setImgURL] = useState(null);
+
+  useEffect(() => {
+    if (userData) {
+      const userRef = ref(storage, `display-pictures/${userData.username}.jpg`);
+      getDownloadURL(userRef).then((url) =>
+        setUserData({ ...userData, dpURL: url.toString() })
+      );
+    }
+  }, [userData]);
 
   useEffect(() => {
     const unSub = onAuthStateChanged(auth, (User) => {
@@ -34,32 +45,24 @@ export default function UserContext({ children }) {
     return getUserData();
   }, [user]);
 
-  const [posts, setPosts] = useState([
-    {
-      authorUID: '123456789',
-      authorName: 'Juan Jose',
-      authorUsername: 'josethewise',
-      authorLogo: 'JJ',
-      id: 1,
-      content:
-        "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
-      // comments: 0,
-      likes: 0,
-      // shares: 0,
-    },
-    {
-      authorUID: '1234',
-      authorName: 'Brott Maney',
-      authorUsername: 'brottdaking',
-      authorLogo: 'BM',
-      id: 2,
-      content:
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse tristique vestibulum pharetra. Curabitur a enim purus. Vestibulum convallis gravida condimentum.',
-      // comments: 0,
-      likes: 0,
-      // shares: 0,
-    },
-  ]);
+  useEffect(() => {
+    async function getPosts() {
+      const postsData = [];
+      const Snapshot = await getDocs(collection(db, 'posts'));
+      Snapshot.forEach(async (doc) => {
+        const imageURL = null;
+        await getDownloadURL(
+          ref(storage, `posts/${doc.id}.${doc.data().imgExt}`)
+        ).then((url) => {
+          imageURL = url;
+        });
+        postsData.push({ ...doc.data(), id: doc.id, imgURL: imageURL });
+      });
+      setPosts(postsData);
+    }
+    return getPosts();
+  }, []);
+  const [posts, setPosts] = useState([]);
   const value = { user, setUser, userData, setUserData, posts };
   return (
     <UserContextAPI.Provider value={value}>{children}</UserContextAPI.Provider>

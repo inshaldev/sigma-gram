@@ -1,10 +1,10 @@
-import styles from '../../styles/Profile.module.css';
+import styles from '../styles/Profile.module.css';
 import React, { useEffect } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/dist/client/router';
-import { useData } from '../../contexts/UserContext';
-import ProfileHeader from '../../components/ProfileHeader';
-import ProfilePosts from '../../components/ProfilePosts';
+import { useData } from '../contexts/UserContext';
+import ProfileHeader from '../components/ProfileHeader';
+import ProfilePosts from '../components/ProfilePosts';
 
 function Profile() {
   const { user, userData } = useData();
